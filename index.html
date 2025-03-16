@@ -3,77 +3,166 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Data Kedinasan & Nama Orang</title>
+    <title>SIPEDA - Pemko Medan</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
         padding: 20px;
+        background-color: #1a1a1a;
+        color: white;
       }
       .kedinasan {
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        background-color: #2d2d2d;
         border-radius: 5px;
+        overflow: hidden;
       }
-      .kedinasan h3 {
+      .kedinasan-header {
+        padding: 15px;
+        background-color: #333;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      .kedinasan-header h3 {
         margin: 0;
-        padding: 0;
+        color: white;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .kedinasan-content {
+        padding: 15px;
       }
       .subtask {
-        margin-left: 20px;
-        color: #555;
+        padding: 10px 0;
+        border-bottom: 1px solid #444;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-      .toggle-button {
-        cursor: pointer;
-        color: rgb(132, 255, 0);
-        text-decoration: underline;
-        display: block;
-        margin-top: 5px;
+      .status-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
       }
-      .hidden {
-        display: none;
+      .status-icon.done {
+        background-color: #4caf50;
+      }
+      .status-icon.in-progress {
+        background-color: #ffc107;
+      }
+      .status-icon.pending {
+        background-color: #f44336;
       }
       .tag {
-        background-color: #654321;
+        background-color: #553c9a;
         color: white;
-        padding: 2px 5px;
-        border-radius: 3px;
+        padding: 4px 8px;
+        border-radius: 12px;
         font-size: 12px;
         margin-left: 5px;
       }
-      .status {
-        padding: 2px 5px;
-        border-radius: 3px;
-        font-size: 12px;
-        margin-left: 10px;
+      .task-count {
+        color: #888;
+        margin-left: auto;
       }
-      .status.done {
-        background-color: green;
-        color: white;
-      }
-      .status.in-progress {
-        background-color: orange;
-        color: white;
-      }
-      .status.pending {
-        background-color: red;
+      #searchInput {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        background-color: #333;
+        border: none;
+        border-radius: 5px;
         color: white;
       }
       .download-btn {
-        margin-top: 10px;
-        padding: 10px;
-        background-color: rgb(115, 128, 0);
+        width: 100%;
+        padding: 12px;
+        background-color: #07c139;
         color: white;
         border: none;
-        cursor: pointer;
         border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+      .header-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #2d2d2d;
+        border-radius: 10px;
+      }
+      .logo-container {
+        width: 80px;
+        height: 80px;
+      }
+      .logo-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .title-container {
+        flex: 1;
+      }
+      .title-container h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffffff;
+      }
+      .title-container .subtitle {
+        color: #888;
+        font-size: 14px;
+        margin-top: 5px;
+      }
+      @media (max-width: 768px) {
+        body {
+          padding: 10px;
+        }
+        .kedinasan-header h3 {
+          font-size: 14px;
+        }
+        .tag {
+          font-size: 10px;
+        }
+        .header-container {
+          flex-direction: column;
+          text-align: center;
+          padding: 15px;
+        }
+        .logo-container {
+          width: 60px;
+          height: 60px;
+        }
+        .title-container h1 {
+          font-size: 20px;
+        }
+        .title-container .subtitle {
+          font-size: 12px;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>DAFTAR KEDINASAN KP 1 APRIL 2025 </h1>
-    <input type="text" id="searchInput" placeholder="Cari Kedinasan..." oninput="filterData()" />
+    <div class="header-container">
+      <div class="logo-container">
+        <img src="images/logo pemko medan.png" alt="Logo Pemko Medan" />
+      </div>
+      <div class="title-container">
+        <h1>SIMPEDA</h1>
+        <div class="subtitle">Sistem Informasi Manajemen Perangkat Daerah</div>
+        <div class="subtitle">Pemerintah Kota Medan</div>
+      </div>
+    </div>
+
+    <input type="text" id="searchInput" placeholder="Cari Perangkat Daerah..." oninput="filterData()" />
     <button class="download-btn" onclick="downloadExcel()">Unduh Excel</button>
     <div id="kedinasanContainer"></div>
 
@@ -128,13 +217,27 @@
       }
 
       function getStatusClass(status) {
-        switch (status.toLowerCase()) {
+        console.log("Status yang diterima:", status);
+
+        const normalizedStatus = status.toLowerCase().replace(/\s+/g, "");
+        console.log("Status setelah normalisasi:", normalizedStatus);
+
+        switch (normalizedStatus) {
           case "done":
-            return "status done";
+          case "selesai":
+          case "complete":
+          case "completed":
+            return "status-icon done";
+          case "inprogress":
+          case "sedangdikerjakan":
           case "in progress":
-            return "status in-progress";
+          case "progress":
+            return "status-icon in-progress";
+          case "todo":
+          case "open":
+          case "pending":
           default:
-            return "status pending";
+            return "status-icon pending";
         }
       }
 
@@ -146,22 +249,41 @@
         data.forEach((kedinasan) => {
           const div = document.createElement("div");
           div.className = "kedinasan";
-          div.innerHTML = `<h3>${kedinasan.nama} <span class='${getStatusClass(kedinasan.status)}'>${kedinasan.status}</span></h3>`;
+
+          const taskCount = kedinasan.subtasks.length;
+          const header = document.createElement("div");
+          header.className = "kedinasan-header";
+          header.innerHTML = `
+            <h3>
+              <span class="${getStatusClass(kedinasan.status)}"></span>
+              ${kedinasan.nama}
+            </h3>
+            <span class="task-count">${taskCount} / ${taskCount}</span>
+          `;
+
+          const content = document.createElement("div");
+          content.className = "kedinasan-content";
 
           kedinasan.assignees.forEach((assignee) => {
             const assigneeDiv = document.createElement("div");
             assigneeDiv.className = "subtask";
             assigneeDiv.innerHTML = `Ditugaskan kepada: ${assignee.nama} ${assignee.tags.map((tag) => `<span class='tag'>${tag}</span>`).join(" ")}`;
-            div.appendChild(assigneeDiv);
+            content.appendChild(assigneeDiv);
           });
 
           kedinasan.subtasks.forEach((subtask) => {
             const subtaskDiv = document.createElement("div");
             subtaskDiv.className = "subtask";
-            subtaskDiv.innerHTML = `▶ ${subtask.nama} <span class='${getStatusClass(subtask.status)}'>${subtask.status}</span> ${subtask.tags.map((tag) => `<span class='tag'>${tag}</span>`).join(" ")}`;
-            div.appendChild(subtaskDiv);
+            subtaskDiv.innerHTML = `
+              <span class="${getStatusClass(subtask.status)}"></span>
+              ${subtask.nama}
+              ${subtask.tags.map((tag) => `<span class='tag'>${tag}</span>`).join(" ")}
+            `;
+            content.appendChild(subtaskDiv);
           });
 
+          div.appendChild(header);
+          div.appendChild(content);
           container.appendChild(div);
         });
       }
@@ -203,22 +325,41 @@
         data.forEach((kedinasan) => {
           const div = document.createElement("div");
           div.className = "kedinasan";
-          div.innerHTML = `<h3>${kedinasan.nama} <span class='${getStatusClass(kedinasan.status)}'>${kedinasan.status}</span></h3>`;
+
+          const taskCount = kedinasan.subtasks.length;
+          const header = document.createElement("div");
+          header.className = "kedinasan-header";
+          header.innerHTML = `
+            <h3>
+              <span class="${getStatusClass(kedinasan.status)}"></span>
+              ${kedinasan.nama}
+            </h3>
+            <span class="task-count">${taskCount} / ${taskCount}</span>
+          `;
+
+          const content = document.createElement("div");
+          content.className = "kedinasan-content";
 
           kedinasan.assignees.forEach((assignee) => {
             const assigneeDiv = document.createElement("div");
             assigneeDiv.className = "subtask";
             assigneeDiv.innerHTML = `Ditugaskan kepada: ${assignee.nama} ${assignee.tags.map((tag) => `<span class='tag'>${tag}</span>`).join(" ")}`;
-            div.appendChild(assigneeDiv);
+            content.appendChild(assigneeDiv);
           });
 
           kedinasan.subtasks.forEach((subtask) => {
             const subtaskDiv = document.createElement("div");
             subtaskDiv.className = "subtask";
-            subtaskDiv.innerHTML = `▶ ${subtask.nama} <span class='${getStatusClass(subtask.status)}'>${subtask.status}</span> ${subtask.tags.map((tag) => `<span class='tag'>${tag}</span>`).join(" ")}`;
-            div.appendChild(subtaskDiv);
+            subtaskDiv.innerHTML = `
+              <span class="${getStatusClass(subtask.status)}"></span>
+              ${subtask.nama}
+              ${subtask.tags.map((tag) => `<span class='tag'>${tag}</span>`).join(" ")}
+            `;
+            content.appendChild(subtaskDiv);
           });
 
+          div.appendChild(header);
+          div.appendChild(content);
           container.appendChild(div);
         });
       }
